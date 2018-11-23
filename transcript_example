@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><process version="9.0.003">
+  <context>
+    <input/>
+    <output/>
+    <macros>
+      <macro>
+        <key>speaker</key>
+        <value>Speaker</value>
+      </macro>
+      <macro>
+        <key>intervention</key>
+        <value>Intervention</value>
+      </macro>
+      <macro>
+        <key>date_place</key>
+        <value>Example Interview Transcripts - OpenLearn - Open University</value>
+      </macro>
+      <macro>
+        <key>loc</key>
+        <value>/Users/Charlie/Desktop</value>
+      </macro>
+    </macros>
+  </context>
+  <operator activated="true" class="process" compatibility="9.0.003" expanded="true" name="Process">
+    <process expanded="true">
+      <operator activated="true" class="text:process_document_from_file" compatibility="8.1.000" expanded="true" height="82" name="MAIN" width="90" x="45" y="340">
+        <list key="text_directories">
+          <parameter key="Data" value="%{loc}"/>
+        </list>
+        <parameter key="create_word_vector" value="false"/>
+        <parameter key="add_meta_information" value="false"/>
+        <parameter key="keep_text" value="true"/>
+        <process expanded="true">
+          <operator activated="true" class="text:replace_tokens" compatibility="8.1.000" expanded="true" height="68" name="Replace Tokens" width="90" x="179" y="34">
+            <list key="replace_dictionary">
+              <parameter key="(?)([A-Z].*:)| (.*)($)" value="/ $1"/>
+            </list>
+            <description align="center" color="gray" colored="true" width="126">Adding &amp;quot;/&amp;quot; symbol</description>
+          </operator>
+          <operator activated="true" class="text:cut_document" compatibility="8.1.000" expanded="true" height="68" name="Cut Document (2)" width="90" x="380" y="34">
+            <parameter key="query_type" value="Regular Region"/>
+            <list key="string_machting_queries">
+              <parameter key="Data" value="([A-Z]:).([A-Z]:)"/>
+            </list>
+            <list key="regular_expression_queries">
+              <parameter key="Speakers" value="(?)(.*[A-Z].*:).*([A-Z]:)"/>
+            </list>
+            <list key="regular_region_queries">
+              <parameter key="Data" value="(?)(\.*[A-Z]\.*:).(/)"/>
+            </list>
+            <list key="xpath_queries"/>
+            <list key="namespaces"/>
+            <list key="index_queries"/>
+            <list key="jsonpath_queries"/>
+            <process expanded="true">
+              <connect from_port="segment" to_port="document 1"/>
+              <portSpacing port="source_segment" spacing="0"/>
+              <portSpacing port="sink_document 1" spacing="0"/>
+              <portSpacing port="sink_document 2" spacing="0"/>
+            </process>
+            <description align="center" color="purple" colored="true" width="126">Creating speakers' examples</description>
+          </operator>
+          <connect from_port="document" to_op="Replace Tokens" to_port="document"/>
+          <connect from_op="Replace Tokens" from_port="document" to_op="Cut Document (2)" to_port="document"/>
+          <connect from_op="Cut Document (2)" from_port="documents" to_port="document 1"/>
+          <portSpacing port="source_document" spacing="0"/>
+          <portSpacing port="sink_document 1" spacing="0"/>
+          <portSpacing port="sink_document 2" spacing="0"/>
+        </process>
+        <description align="center" color="yellow" colored="true" width="126">Creating a Data Set base on speakers' interventions. Each entry is one speaker.</description>
+      </operator>
+      <operator activated="true" class="set_role" compatibility="9.0.003" expanded="true" height="82" name="Set Role" width="90" x="112" y="238">
+        <parameter key="attribute_name" value="text"/>
+        <list key="set_additional_roles"/>
+      </operator>
+      <operator activated="true" class="generate_attributes" compatibility="9.0.003" expanded="true" height="82" name="Generate Attributes" width="90" x="246" y="442">
+        <list key="function_descriptions">
+          <parameter key="%{date_place}" value="%{date_place}"/>
+        </list>
+      </operator>
+      <operator activated="true" class="select_attributes" compatibility="9.0.003" expanded="true" height="82" name="Select Attributes" width="90" x="246" y="340">
+        <parameter key="attribute_filter_type" value="subset"/>
+        <parameter key="attribute" value="text"/>
+        <parameter key="attributes" value="label|metadata_date|metadata_file|metadata_path|query_key"/>
+        <parameter key="invert_selection" value="true"/>
+        <parameter key="include_special_attributes" value="true"/>
+      </operator>
+      <operator activated="true" class="text:generate_extract" compatibility="8.1.000" expanded="true" height="68" name="Generate Extract" width="90" x="246" y="238">
+        <parameter key="source_attribute" value="text"/>
+        <parameter key="query_type" value="Regular Region"/>
+        <list key="string_machting_queries"/>
+        <list key="regular_expression_queries"/>
+        <list key="regular_region_queries">
+          <parameter key="%{speaker}" value="([A-Z]).(:)"/>
+          <parameter key="%{intervention}" value="(:).($)"/>
+        </list>
+        <list key="xpath_queries"/>
+        <list key="namespaces"/>
+        <list key="index_queries"/>
+        <list key="jsonpath_queries"/>
+      </operator>
+      <operator activated="true" class="replace" compatibility="9.0.003" expanded="true" height="82" name="Replace" width="90" x="380" y="238">
+        <parameter key="attribute_filter_type" value="subset"/>
+        <parameter key="attribute" value="Speaker"/>
+        <parameter key="attributes" value="text"/>
+        <parameter key="invert_selection" value="true"/>
+        <parameter key="replace_what" value="([:]|[/]|(.pdf))($)"/>
+      </operator>
+      <operator activated="true" class="replace" compatibility="9.0.003" expanded="true" height="82" name="Replace (2)" width="90" x="380" y="340">
+        <parameter key="attribute_filter_type" value="single"/>
+        <parameter key="attribute" value="%{intervention}"/>
+        <parameter key="replace_what" value="(?)(: )"/>
+      </operator>
+      <operator activated="true" class="trim" compatibility="9.0.003" expanded="true" height="82" name="Trim" width="90" x="380" y="442"/>
+      <operator activated="true" class="select_attributes" compatibility="9.0.003" expanded="true" height="82" name="Select Attributes (2)" width="90" x="514" y="442">
+        <parameter key="attribute_filter_type" value="subset"/>
+        <parameter key="attributes" value="text"/>
+        <parameter key="invert_selection" value="true"/>
+      </operator>
+      <operator activated="true" class="order_attributes" compatibility="9.0.003" expanded="true" height="82" name="Reorder Attributes" width="90" x="514" y="340">
+        <parameter key="attribute_ordering" value="\%{date_place}|\%{speaker}|\%{intervention}"/>
+      </operator>
+      <operator activated="true" class="generate_attributes" compatibility="9.0.003" expanded="true" height="82" name="Generate Attributes (2)" width="90" x="514" y="238">
+        <list key="function_descriptions">
+          <parameter key="%{speaker}" value="upper(eval(%{speaker}))"/>
+        </list>
+      </operator>
+      <operator activated="true" class="extract_macro" compatibility="9.0.003" expanded="true" height="68" name="Extract Macro" width="90" x="648" y="238">
+        <parameter key="macro" value="name"/>
+        <parameter key="macro_type" value="data_value"/>
+        <parameter key="attribute_name" value="%{date_place}"/>
+        <parameter key="example_index" value="1"/>
+        <list key="additional_macros"/>
+        <description align="center" color="red" colored="true" width="126">This will save your file Data Set with the name you type into the value of macro: date_place.</description>
+      </operator>
+      <operator activated="false" class="filter_examples" compatibility="9.0.003" expanded="true" height="103" name="Filter Examples" width="90" x="782" y="238">
+        <list key="filters_list">
+          <parameter key="filters_entry_key" value="Speaker.matches.[A-Z]\.*[A-Z]"/>
+        </list>
+      </operator>
+      <operator activated="true" breakpoints="before" class="write_excel" compatibility="9.0.003" expanded="true" height="82" name="Write Excel" width="90" x="916" y="238">
+        <parameter key="excel_file" value="%{loc}/%{name}.xls"/>
+        <parameter key="file_format" value="xls"/>
+      </operator>
+      <connect from_op="MAIN" from_port="example set" to_op="Set Role" to_port="example set input"/>
+      <connect from_op="Set Role" from_port="example set output" to_op="Generate Attributes" to_port="example set input"/>
+      <connect from_op="Generate Attributes" from_port="example set output" to_op="Select Attributes" to_port="example set input"/>
+      <connect from_op="Select Attributes" from_port="example set output" to_op="Generate Extract" to_port="Example Set"/>
+      <connect from_op="Generate Extract" from_port="Example Set" to_op="Replace" to_port="example set input"/>
+      <connect from_op="Replace" from_port="example set output" to_op="Replace (2)" to_port="example set input"/>
+      <connect from_op="Replace (2)" from_port="example set output" to_op="Trim" to_port="example set input"/>
+      <connect from_op="Trim" from_port="example set output" to_op="Select Attributes (2)" to_port="example set input"/>
+      <connect from_op="Select Attributes (2)" from_port="example set output" to_op="Reorder Attributes" to_port="example set input"/>
+      <connect from_op="Reorder Attributes" from_port="example set output" to_op="Generate Attributes (2)" to_port="example set input"/>
+      <connect from_op="Generate Attributes (2)" from_port="example set output" to_op="Extract Macro" to_port="example set"/>
+      <connect from_op="Extract Macro" from_port="example set" to_op="Write Excel" to_port="input"/>
+      <connect from_op="Write Excel" from_port="through" to_port="result 1"/>
+      <portSpacing port="source_input 1" spacing="0"/>
+      <portSpacing port="sink_result 1" spacing="0"/>
+      <portSpacing port="sink_result 2" spacing="0"/>
+      <description align="left" color="green" colored="true" height="224" resized="true" width="973" x="10" y="10">README:&lt;br&gt;&lt;br&gt;This process create examples (rows) of every speaker in the file. First it adds a &amp;quot;/&amp;quot; at the begining of each speaker name, creating boundaries between one speaker and the other.&lt;br&gt;&lt;br&gt;Requirements:&lt;br&gt;1) the main requirement is to have your transcript with the next convention: &amp;quot;SPEAKER: &amp;quot; or &amp;quot;Speaker: &amp;quot; or even &amp;quot;SpEaKeR: &amp;quot;, then the interventions or words spoken by each speakers during the meeting, focus group or interview.&lt;br&gt;2) your files shoud be PDF&lt;br&gt;3) all of your files should be in the same Folder (operator name: MAIN...the first one!). You can redirect the location wherever you want to using &amp;quot;loc&amp;quot; macro. But take into account that your data base final woill be saved in the same folder, so if you have to re process your original files, you should go to the folder and move/remove the XLS file.</description>
+    </process>
+  </operator>
+</process>
